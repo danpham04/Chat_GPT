@@ -12,7 +12,7 @@ class TextFieldApp extends StatelessWidget {
       this.enabled = true,
       this.keyboardType,
       this.onPressed,
-      this.border});
+      this.border, this.color});
 
   final TextEditingController controller;
   final String hintText;
@@ -24,13 +24,15 @@ class TextFieldApp extends StatelessWidget {
   final TextInputType? keyboardType;
   final void Function()? onPressed;
   final InputBorder? border;
-
+final Color? color;
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
+      
         hintText: hintText,
+        hintStyle: TextStyle(color: color),
         suffixIcon: IconButton(icon: icon, onPressed: onPressed),
         border: border,
       ),

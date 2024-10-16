@@ -41,6 +41,8 @@ dependencies:
   cloud_firestore: ^5.4.4
   get: ^4.6.6
   animate_do: ^3.1.2
+  dio: ^5.7.0
+  pretty_dio_logger: ^1.4.0
 
 dev_dependencies:
   flutter_test:
