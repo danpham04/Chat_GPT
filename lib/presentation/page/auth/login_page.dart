@@ -1,6 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:chat_gpt/app/config/app_icon.dart';
-import 'package:chat_gpt/app/config/app_path.dart';
+import 'package:chat_gpt/app/config/app_paths.dart';
 import 'package:chat_gpt/app/routers/app_routes.dart';
 import 'package:chat_gpt/presentation/controller/auth/auth_controller.dart';
 import 'package:chat_gpt/presentation/page/auth/widgets/custom_fade_text.dart';
@@ -27,7 +27,7 @@ class LoginPage extends GetView<AuthController> {
                 child: Stack(
                   children: <Widget>[
                     CustomFedeinImg(
-                      pathImg: AppPath.background,
+                      pathImg: AppPaths.background,
                       top: -40,
                       height: 400,
                       width: width,
@@ -35,7 +35,7 @@ class LoginPage extends GetView<AuthController> {
                       fit: BoxFit.fill,
                     ),
                     CustomFedeinImg(
-                      pathImg: AppPath.background2,
+                      pathImg: AppPaths.background2,
                       height: 400,
                       width: width + 20,
                       duration: const Duration(milliseconds: 1000),

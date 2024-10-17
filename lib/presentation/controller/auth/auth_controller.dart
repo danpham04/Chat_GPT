@@ -1,3 +1,4 @@
+import 'package:chat_gpt/app/helpers/snack_bar_helpers.dart';
 import 'package:chat_gpt/app/routers/app_routes.dart';
 import 'package:chat_gpt/data/database/firebase_auththentication.dart';
 import 'package:flutter/material.dart';
@@ -21,42 +22,68 @@ class AuthController extends GetxController {
   bool isLoggedIn = false;
   bool isSignUp = false;
 
-  @override
-  void onClose() {
-    emailLoginController.dispose();
-    emailSignUpController.dispose();
-    passwordLoginController.dispose();
-    passwordSignUpController.dispose();
-    passwordComfirmController.dispose();
 
-    super.onClose();
-  }
-
-  Future<void> login() async {
+  Future<bool> login() async {
     String email = emailLoginController.text;
     String password = passwordLoginController.text;
 
     if (email.trim() == "" || password.trim() == "") {
-      Get.snackbar(
-        'Lỗi',
-        'Email và mật khẩu không được để trống',
-        backgroundColor: const Color.fromRGBO(143, 148, 251, 1),
-        colorText: Colors.black,
-      );
-      return;
+      SnackBarhelpers.showCustomSnackbar(
+          title: 'Cảnh báo',
+          message: 'Email và mật khẩu không được để trống',
+          icon: Icons.warning_amber_rounded,
+          colorIcon: Colors.red,
+          backgroundColor: Colors.white);
+      return false;
     }
     try {
-      await firebaseAuththentication.loginWithEmail(
-          email: email, password: password);
-      isLoggedIn = true;
+      final user = await firebaseAuththentication.loginWithEmail(
+        email: emailLoginController.text.trim(),
+        password: passwordLoginController.text.trim(),
+      );
+      if (user != null) {
+        SnackBarhelpers.showCustomSnackbar(
+          title: 'Thành công',
+          message: 'Đăng nhập thành công',  
+          );
+        isLoggedIn = true;
+        return true;
+      }
     } catch (e) {
-      rethrow;
+      SnackBarhelpers.showCustomSnackbar(
+          title: 'Lỗi',
+          message: 'Đăng nhập thất bại',
+          icon: Icons.warning_rounded,
+          colorIcon: Colors.red,
+          backgroundColor: Colors.white,);
     }
+    return false;
   }
 
-  Future<void> signUp() async {
+  Future<bool> signUp() async {
     String email = emailSignUpController.text;
     String password = passwordSignUpController.text;
+    String passwordComfirm = passwordComfirmController.text;
+    if (email.trim() == "" || password.trim() == "" || passwordComfirm.trim() == "") {
+      SnackBarhelpers.showCustomSnackbar(
+          title: 'Lỗi',
+          message: 'Email và mật khẩu không được để trống',
+          icon: Icons.warning_rounded,
+          colorIcon: Colors.red,
+          backgroundColor: Colors.white,);
+      return false;
+    }
+    if (password.trim() != passwordComfirm.trim()) {
+      
+      SnackBarhelpers.showCustomSnackbar(
+          title: 'Lỗi',
+          message: 'Mật Khẩu không khớp',
+          icon: Icons.warning_rounded,
+          colorIcon: Colors.red,
+          backgroundColor: Colors.white,);
+      return false;
+    }
+
     try {
       await firebaseAuththentication.signUpWithEmail(
           email: email, password: password);
@@ -64,9 +91,11 @@ class AuthController extends GetxController {
     } catch (e) {
       rethrow;
     }
+    return false;
   }
 
-  void logout() {
+  void logout() async{
+    await firebaseAuththentication.signOut();
     isLoggedIn = false;
     Get.offAllNamed(AppRoutes.loginPage); // Điều hướng về màn hình đăng nhập
   }

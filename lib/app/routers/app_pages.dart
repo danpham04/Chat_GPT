@@ -1,5 +1,6 @@
 import 'package:chat_gpt/app/routers/app_routes.dart';
 import 'package:chat_gpt/presentation/controller/auth/auth_binding.dart';
+import 'package:chat_gpt/presentation/controller/home/home_screen_binding.dart';
 import 'package:chat_gpt/presentation/page/auth/login_page.dart';
 import 'package:chat_gpt/presentation/page/auth/signup_page.dart';
 import 'package:chat_gpt/presentation/page/home_page/home_screen.dart';
@@ -26,7 +27,7 @@ class AppPage {
     GetPage(
       name: AppRoutes.homescreen,
       page: () => const HomeScreen(),
-      
+      binding: HomeScreenBinding(),
     ),
 
     //Page
