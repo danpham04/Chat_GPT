@@ -1,3 +1,4 @@
+import 'package:chat_gpt/data/repositories/api_error.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -15,19 +16,24 @@ class DataFirebaseProvider {
   ) async {
     try {
       // Thực hiện lưu dữ liệu vào Firestore
-      await _firestore
-          .collection('user') // tạo một folderc có tên là 'user'
-          .doc(_user!.uid) // Tài liệu người dùng với UID cụ thể
-          .collection('message') // folder con của 'user' có tên là 'message'
-          .doc(title) // Tiêu đề đoạn chat do người dùng nhập vào 'title'
-          .set(
-              {
+      if (title != '') {
+        await _firestore
+            .collection('user') // tạo một folderc có tên là 'user'
+            .doc(_user!.uid) // Tài liệu người dùng với UID cụ thể
+            .collection('message') // folder con của 'user' có tên là 'message'
+            .doc(title) // Tiêu đề đoạn chat do người dùng nhập vào 'title'
+            .set(
+          {
             // Lưu thông tin tin nhắn vào Firestore
             'listChatDay': listMessage,
             'createdAt': FieldValue.serverTimestamp(), // thời gian tạo
           },
-              // SetOption sử dụng để hợp nhất dữ liệu mà ko phải ghi đè lên toàn bộ dữ liệu
-              SetOptions(merge: true));
+          // SetOption sử dụng để hợp nhất dữ liệu mà ko phải ghi đè lên toàn bộ dữ liệu
+          SetOptions(merge: true),
+        );
+      } else {
+        throw Exception('no_title');
+      }
     } catch (e) {
       print('Error saving messages: $e');
       rethrow; // Bắn lỗi ra nếu cos

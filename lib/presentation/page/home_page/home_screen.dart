@@ -1,5 +1,6 @@
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:chat_gpt/app/config/app_icon.dart';
+import 'package:chat_gpt/app/helpers/snack_bar_helpers.dart';
 import 'package:chat_gpt/presentation/controller/home/home_screen_controller.dart';
 import 'package:chat_gpt/presentation/page/home_page/widgets/chat_message_ui.dart';
 import 'package:chat_gpt/presentation/page/home_page/widgets/drawer_home.dart';
@@ -35,7 +36,7 @@ class HomeScreen extends GetView<HomeScreenController> {
               width: 35,
             ),
             onPressed: () {
-              Get.dialog(NewChatDialog());
+              Get.dialog(NewChatDialog(controller: controller,));
             },
           ),
         ],
@@ -79,6 +80,22 @@ class HomeScreen extends GetView<HomeScreenController> {
             }),
           ),
           _chatInput(),
+          Obx(() {
+            if (controller.showSnackbar.value) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                SnackBarhelpers.showCustomSnackbar(
+                  title: 'Cảnh báo',
+                  message: controller.snackbarMessage.value,
+                  icon: Icons.warning_amber_rounded,
+                  colorIcon: Colors.red,
+                  backgroundColor: Colors.white,
+                );
+                controller.showSnackbar.value = false; // Reset trạng thái
+              });
+            }
+            return const SizedBox
+                .shrink(); // Trả về widget rỗng để không chiếm không gian
+          }),
         ],
       ),
     );

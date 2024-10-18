@@ -5,6 +5,7 @@ import 'package:chat_gpt/domain/models/request/message_request_model.dart';
 import 'package:chat_gpt/domain/models/response/chat_mesage_response.dart';
 import 'package:chat_gpt/domain/models/response/message_chatgpt_model.dart';
 import 'package:chat_gpt/domain/repository/chat_repository.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -12,12 +13,10 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class HomeScreenController extends GetxController {
   final ChatRepository _chatRepository = ChatRepository();
-  // gọi firestore
-  final DataFirebaseProvider firebaseProvider = DataFirebaseProvider();
-  // Chuyển list data này vào trong chatMessage
-  RxList<MessageRequestModel> data = <MessageRequestModel>[].obs;
+  final DataFirebaseProvider firebaseProvider =
+      DataFirebaseProvider(); // gọi firestore
 
-  // Tạo một list model chứa message người dùng, content của chatGPT, và ngày nhập đoạn chat
+  RxList<MessageRequestModel> data = <MessageRequestModel>[].obs;
   RxList<ChatMessageResponse> dataChatApp = <ChatMessageResponse>[].obs;
   List<Map<String, dynamic>> listMessage = <Map<String, dynamic>>[].obs;
 
@@ -25,8 +24,7 @@ class HomeScreenController extends GetxController {
   late ScrollController scrollController;
 
   RxString currentTitle = ''.obs;
-  // Danh sách các titles
-  RxList<String> titles = <String>[].obs;
+  RxList<String> titles = <String>[].obs; // Danh sách các titles
 
   // speech to text
   late stt.SpeechToText speechToText; // Khai báo SpeechToText
@@ -35,12 +33,23 @@ class HomeScreenController extends GetxController {
 
   String? previousMessageTime;
 
+  RxString snackbarMessage = ''.obs;
+  RxBool showSnackbar = false.obs;
+  RxString snackbarTitle = ''.obs;
+
   @override
   void onInit() {
     textChat = TextEditingController();
     scrollController = ScrollController();
     speechToText = stt.SpeechToText();
-    fetchTitles();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (scrollController.hasClients) {
+        scrollController.jumpTo(scrollController
+            .position.maxScrollExtent); // Cuộn xuống dưới nếu cần
+      }
+      fetchTitles();
+    });
+
     super.onInit();
   }
 
@@ -58,6 +67,7 @@ class HomeScreenController extends GetxController {
       List<String> fetchedTitles = await firebaseProvider.readTitles();
       titles.assignAll(fetchedTitles);
     } catch (e) {
+      //TODO:
       SnackBarhelpers.showCustomSnackbar(
           title: 'Lỗi',
           message: 'Không thể lấy danh sách tiêu đề!',
@@ -74,103 +84,90 @@ class HomeScreenController extends GetxController {
   }
 
   Future<void> addMessage() async {
-    // if (currentTitle.value.isEmpty) {
-    //   Get.snackbar("Cảnh báo", "Bạn phải tạo một chat mới trước khi gửi tin nhắn.");
-    //   return;
-    // }
-    // Lấy thời gian hiện tại và định dạng nó
-    DateTime now = DateTime.now();
-    // định dạng ngày giờ kiểu giời hiện tại và tháng
-    String formattedDate = '${DateFormat('HH:mm').format(now)} T${now.month}';
-
     // Kiểm tra xem người dùng có nhập tin nhắn không
     if (textChat.text.trim().isEmpty) {
-      SnackBarhelpers.showCustomSnackbar(
-          title: 'Cảnh báo',
-          message: 'Bạn phải nhập thông tin',
-          icon: Icons.warning_amber_rounded,
-          colorIcon: Colors.red,
-          backgroundColor: Colors.white);
-      return;
+      snackbarMessage.value = 'Bạn phải nhập thông tin';
+      showSnackbar.value = true;
+      snackbarTitle.value = 'Cảnh báo';
     }
 
     // Tạo list message từ người dùng
-    MessageRequestModel messageSend =
-        MessageRequestModel(role: 'user', content: textChat.text);
-    data.add(messageSend);
+    else {
+      MessageRequestModel messageSend =
+          MessageRequestModel(role: 'user', content: textChat.text);
+      data.add(messageSend);
+      DateTime now = DateTime.now();
+      // định dạng ngày giờ kiểu giời hiện tại và tháng
+      String formattedDate = '${DateFormat('HH:mm').format(now)} T${now.month}';
+      // Tạo ChatMessageResponse cho tin nhắn của người dùng
+      ChatMessageResponse userMessage = ChatMessageResponse(
+        role: 'user',
+        content: messageSend.content,
+        day: formattedDate,
+      );
 
-    // Tạo ChatMessageResponse cho tin nhắn của người dùng
-    ChatMessageResponse userMessage = ChatMessageResponse(
-      role: 'user',
-      content: messageSend.content,
-      day: formattedDate,
-    );
+      dataChatApp.insert(0, userMessage); // Thêm vào danh sách
 
-    dataChatApp.insert(0, userMessage); // Thêm vào danh sách
-    listMessage.insert(0, userMessage.toJson());
+      textChat.clear(); // Xóa text sau khi gửi
 
-    // Thêm vào danh sách
+      // 1 list cac message từ người dùng
+      ChatMessageRequest listChat = ChatMessageRequest(listMessage: data);
+      try {
+        // Gửi tin nhắn đến repository và nhận phản hồi
+        MessageChatgptModel? responseChat =
+            await _chatRepository.chatGPTMessage(listChat);
 
-    textChat.clear(); // Xóa text sau khi gửi
+        if (responseChat != null && responseChat.content.isNotEmpty) {
+          // Lấy thời gian hiện tại cho phản hồi
+          DateTime responseTime = DateTime.now();
 
-    // 1 list cac message từ người dùng
-    ChatMessageRequest listChat = ChatMessageRequest(listMessage: data);
+          String formattedResponseTime =
+              '${DateFormat('HH:mm').format(responseTime)} T${responseTime.month}';
 
-    try {
-      // Gửi tin nhắn đến repository và nhận phản hồi
-      MessageChatgptModel? responseChat =
-          await _chatRepository.chatGPTMessage(listChat);
+          // Tạo ChatMessageResponse cho phản hồi từ ChatGPT
+          ChatMessageResponse botResponse = ChatMessageResponse(
+            role: 'bot',
+            content: responseChat.content, // lấy content mà chat trả về
+            day: formattedResponseTime,
+          );
 
-      if (responseChat != null && responseChat.content.isNotEmpty) {
-        // Lấy thời gian hiện tại cho phản hồi
-        DateTime responseTime = DateTime.now();
-        
-        String formattedResponseTime =
-            '${DateFormat('HH:mm').format(responseTime)} T${responseTime.month}';
+          dataChatApp.insert(0, botResponse);
 
-        // Tạo ChatMessageResponse cho phản hồi từ ChatGPT
-        ChatMessageResponse botResponse = ChatMessageResponse(
-          role: 'bot',
-          content: responseChat.content, // lấy content mà chat trả về
-          day: formattedResponseTime,
-        );
+          listMessage.insert(0, {
+            "user": userMessage.toJson(),
+            "chatBot": botResponse.toJson()
+          }); // Thêm vào danh sách
+        }
 
-        dataChatApp.insert(0, botResponse);
-
-        listMessage.insert(0, botResponse.toJson()); // Thêm vào danh sách
-      } else {
-        SnackBarhelpers.showCustomSnackbar(
-            title: 'Lỗi',
-            message: 'Phản hồi từ server rỗng.!',
-            icon: Icons.error_rounded,
-            colorIcon: Colors.red,
-            backgroundColor: Colors.white);
+        await firebaseProvider.create(currentTitle.value, listMessage);
+        // Cập nhật lại danh sách titles sau khi lưu
+        // await fetchTitles(); //TODO: xử lý titile
+      } catch (e) {
+        print(e);
+        if (e.toString() == 'Exception: no_title' && currentTitle.value == '') {
+          snackbarTitle.value = 'Thông báo';
+          snackbarMessage.value =
+              'Bạn hãy tạo một chủ đề để lưu trữ đoạn chat!';
+          showSnackbar.value = true;
+        } else {
+          if (e is FirebaseException) {
+            snackbarTitle.value = 'Lỗi';
+            snackbarMessage.value = 'Đã có lỗi sảy ra tại firebase + $e';
+            showSnackbar.value = true;
+          } else {
+            snackbarTitle.value = 'Lỗi';
+            snackbarMessage.value = 'Đã có lỗi sảy ra + $e';
+            showSnackbar.value = true;
+          }
+        }
       }
-
-    } catch (e) {
-      SnackBarhelpers.showCustomSnackbar(
-          title: 'Lỗi',
-          message: 'Có lỗi xảy ra!',
-          icon: Icons.error_rounded,
-          colorIcon: Colors.red,
-          backgroundColor: Colors.white);
     }
-    // luu du lieu vao firebase
-    try {
-      await firebaseProvider.create(currentTitle.value, listMessage);
-      // Cập nhật lại danh sách titles sau khi lưu
-      await fetchTitles();
-    } catch (e) {
-      SnackBarhelpers.showCustomSnackbar(
-          title: 'Thông báo',
-          message: 'Bạn hãy tạo một chủ đề để lưu trữ đoạn chat!',
-          icon: Icons.notifications,
-          colorIcon: Colors.red,
-          backgroundColor: Colors.white);
-    }
-    // Kiểm tra dữ liệu trong list khi chạy xong
   }
-  //TODO: để chung trong 1 try
+
+  Future<void> newTitlle(String title) async {
+    await firebaseProvider.create(currentTitle.value, listMessage);
+    await fetchTitles();
+  }
 
   // Hàm để tải lại chat từ một title đã lưuba
   Future<void> loadChatByTitle(String title) async {
@@ -198,7 +195,9 @@ class HomeScreenController extends GetxController {
   // Hàm để xóa một chat
   Future<void> deleteChat(String title) async {
     try {
-      await firebaseProvider.deleteChat(title);
+      await firebaseProvider.deleteChat(title); //TODO:
+      dataChatApp.clear();
+      currentTitle.value = '';
       // Cập nhật lại danh sách titles sau khi xóa
       await fetchTitles();
     } catch (e) {

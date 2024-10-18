@@ -13,7 +13,7 @@ class ListTitleApp extends StatelessWidget {
       required this.textTitle,
       this.paddingTitle,
       this.colorOne,
-      this.colorTwo});
+      this.colorTwo, this.border});
 
   final void Function()? onTap;
 
@@ -27,6 +27,7 @@ class ListTitleApp extends StatelessWidget {
   final double radius;
   final Widget? widgetLeading;
   final Widget? widgetTrailing;
+  final BoxBorder? border;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +35,7 @@ class ListTitleApp extends StatelessWidget {
       padding: EdgeInsets.all(paddingTitle ?? 5),
       child: Container(
         decoration: BoxDecoration(
+          border: border,
           borderRadius: BorderRadius.all(Radius.circular(radius)),
           gradient: LinearGradient(colors: [
             colorOne ?? const Color.fromARGB(255, 210, 201, 204),

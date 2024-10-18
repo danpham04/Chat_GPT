@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 class NewChatDialog extends StatelessWidget {
   final TextEditingController _titleController = TextEditingController();
 
-  NewChatDialog({super.key});
-
+  NewChatDialog({super.key, required this.controller});
+  final HomeScreenController controller;
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -42,7 +42,9 @@ class NewChatDialog extends StatelessWidget {
                     backgroundColor: Colors.white);
               } else {
                 Get.find<HomeScreenController>().startNewChat(title);
+
                 Get.back();
+                await Get.find<HomeScreenController>().newTitlle(title);
               }
             } else {
               SnackBarhelpers.showCustomSnackbar(

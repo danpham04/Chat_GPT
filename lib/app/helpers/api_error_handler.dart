@@ -1,4 +1,5 @@
 import 'package:chat_gpt/data/repositories/api_error.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 
 ApiError mapError(dynamic e) {
@@ -12,15 +13,17 @@ ApiError mapError(dynamic e) {
       // lỗi quá thời gian gửi đến sever
       case DioExceptionType.sendTimeout:
         return ApiError(
-            errorCode: "SEND_TIMEOUT", message: 'Có lỗi gửi dữ liệu đến server');
+            errorCode: "SEND_TIMEOUT",
+            message: 'Có lỗi gửi dữ liệu đến server');
       // lỗi nhận dữ liệu từ sever
       case DioExceptionType.receiveTimeout:
         return ApiError(
-            errorCode: "RECEIVE_TIMEOUT", message: 'Có lỗi nhận dữ liệu từ server');
+            errorCode: "RECEIVE_TIMEOUT",
+            message: 'Có lỗi nhận dữ liệu từ server');
 
       // các mã lỗi khác
       case DioExceptionType.badResponse:
-      // data khác null và trả về một cục data là một map
+        // data khác null và trả về một cục data là một map
         if (e.response?.data != null && e.response?.data is Map) {
           String code = '';
           try {
@@ -37,7 +40,7 @@ ApiError mapError(dynamic e) {
             //.......
           } catch (error) {
             return ApiError(
-              // in ra mã lỗi 
+              // in ra mã lỗi
               errorCode: code,
               message: 'Có lỗi đã xảy ra',
               extraData: e.response?.data,
@@ -51,6 +54,28 @@ ApiError mapError(dynamic e) {
           );
         }
       default:
+    }
+  } else {
+    if (e is FirebaseException) {
+      switch (e.code) {
+        case 'not-found':
+          return ApiError(errorCode: '1', message: 'Không tìm thấy dữ liệu trên firebase');
+        case 'already-exists':
+        return ApiError(errorCode: '2', message: 'Dữ liệu này đã tồn tại.');
+        default:
+        return ApiError(errorCode: '3', message:'Đã xảy ra lỗi không xác định. Vui lòng thử lại.' );
+      }
+    } else {
+      if (e is Exception) {
+        switch (e.toString()) {
+          case 'no_title':
+            return ApiError(
+                errorCode: '100',
+                message: 'Bạn cần phải nhập title để lưu đoạn chat');
+
+          default:
+        }
+      }
     }
   }
 

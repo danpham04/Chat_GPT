@@ -10,9 +10,10 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-   await initServices();
+  //  await initServices();
   runApp(const MyApp());
 }
+
 
 initServices() async {
   await Get.put<AppController>(AppController(), permanent: true).init();

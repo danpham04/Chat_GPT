@@ -1,2 +1,3 @@
 // ignore: constant_identifier_names
-const KEY_CHAT = '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';
+const KEY_CHAT =
+    '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';

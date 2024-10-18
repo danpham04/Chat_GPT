@@ -2,10 +2,10 @@ import 'package:chat_gpt/app/config/app_icon.dart';
 import 'package:chat_gpt/app/config/app_paths.dart';
 import 'package:chat_gpt/presentation/controller/auth/auth_controller.dart';
 import 'package:chat_gpt/presentation/controller/home/home_screen_controller.dart';
+import 'package:chat_gpt/presentation/page/home_page/widgets/new_chat_dia_log.dart';
 import 'package:chat_gpt/presentation/widgets/list_title_app.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 
 class DrawerHome extends StatelessWidget {
   const DrawerHome({super.key});
@@ -40,6 +40,17 @@ class DrawerHome extends StatelessWidget {
                   'Danh sách Chat',
                   style: TextStyle(color: Colors.black, fontSize: 24),
                 ),
+              ),
+              ListTitleApp(
+                radius: 10,
+                textTitle: 'New chat',
+                widgetLeading: const Icon(Icons.add),
+                colorOne: const Color.fromARGB(28, 224, 224, 224),
+                colorTwo: const Color.fromARGB(31, 255, 255, 255),
+                border: Border.all(width: 1),
+                onTap: () {
+                  Get.dialog(NewChatDialog(controller: controller,));
+                },
               ),
               Expanded(
                 child: ListView.builder(
