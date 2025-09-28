@@ -30,7 +30,7 @@ class NewChatDialog extends StatelessWidget {
             String title = _titleController.text.trim();
             if (title.isNotEmpty) {
               // Kiểm tra xem title đã tồn tại chưa
-              bool exists = await Get.find<HomeScreenController>()
+              bool exists = await controller
                   .firebaseProvider
                   .checkTitleExists(title);
               if (exists) {
@@ -41,10 +41,9 @@ class NewChatDialog extends StatelessWidget {
                     colorIcon: Colors.red,
                     backgroundColor: Colors.white);
               } else {
-                Get.find<HomeScreenController>().startNewChat(title);
-
+                controller.startNewChat(title);
                 Get.back();
-                await Get.find<HomeScreenController>().newTitlle(title);
+                await controller.newTitlle(title);
               }
             } else {
               SnackBarhelpers.showCustomSnackbar(

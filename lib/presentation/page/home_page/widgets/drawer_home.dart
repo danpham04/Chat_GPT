@@ -19,8 +19,32 @@ class DrawerHome extends StatelessWidget {
       backgroundColor: const Color.fromARGB(255, 211, 251, 255),
       child: Obx(() {
         if (controller.titles.isEmpty) {
-          return const Center(
-            child: Text('Không có chat nào.'),
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const SizedBox(
+                height: 50,
+              ),
+              const Center(
+                child: Text('Không có chat nào.'),
+              ),
+              ListTitleApp(
+                onTap: () {
+                  authController.logout();
+                },
+                textTitle: 'Log out',
+                sizeText: 20,
+                radius: 10,
+                widgetTrailing: IconButton(
+                  icon: Image.asset(
+                    AppIcons.logout,
+                    color: Colors.black,
+                    width: 33,
+                  ),
+                  onPressed: () {},
+                ),
+              )
+            ],
           );
         } else {
           return Column(
@@ -49,7 +73,9 @@ class DrawerHome extends StatelessWidget {
                 colorTwo: const Color.fromARGB(31, 255, 255, 255),
                 border: Border.all(width: 1),
                 onTap: () {
-                  Get.dialog(NewChatDialog(controller: controller,));
+                  Get.dialog(NewChatDialog(
+                    controller: controller,
+                  ));
                 },
               ),
               Expanded(

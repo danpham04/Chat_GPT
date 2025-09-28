@@ -43,7 +43,7 @@ class AuthController extends GetxController {
       );
       if (user != null) {
         SnackBarhelpers.showCustomSnackbar(
-          title: 'Thành công',
+          title: 'Thông báo',
           message: 'Đăng nhập thành công',  
           );
         isLoggedIn = true;

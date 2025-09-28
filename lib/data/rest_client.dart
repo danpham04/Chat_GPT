@@ -11,6 +11,7 @@ class RestClient {
     'Content-Type': 'application/json',
   };
   
+  
   RestClient ({required String baseUrl}){
     final BaseOptions options = BaseOptions(
       baseUrl: baseUrl,

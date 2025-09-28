@@ -10,7 +10,6 @@ ChatMessageRequest({
 dynamic toMap() {
     List<Map<String, dynamic>> chatList = listMessage.map((chat) => chat.toMap()).toList();
     return  chatList;
-    
   }
 
 }

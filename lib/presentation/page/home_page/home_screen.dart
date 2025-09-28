@@ -36,7 +36,9 @@ class HomeScreen extends GetView<HomeScreenController> {
               width: 35,
             ),
             onPressed: () {
-              Get.dialog(NewChatDialog(controller: controller,));
+              Get.dialog(NewChatDialog(
+                controller: controller,
+              ));
             },
           ),
         ],
@@ -58,7 +60,6 @@ class HomeScreen extends GetView<HomeScreenController> {
                     final chatMessage = controller.dataChatApp[index];
                     // biến kiểm tra xem có phải đoạn chat của người dùng không
                     bool isUser = chatMessage.role == 'user';
-
                     // So sánh thời gian của tin nhắn hiện tại với tin nhắn tiếp theo
                     bool showTimestamp = true;
                     if (index < controller.dataChatApp.length - 1) {
@@ -67,7 +68,6 @@ class HomeScreen extends GetView<HomeScreenController> {
                         showTimestamp = false;
                       }
                     }
-
                     return ChatMessageUI(
                       messageContent: chatMessage.content,
                       timestamp: chatMessage.day,

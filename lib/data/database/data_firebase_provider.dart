@@ -1,4 +1,3 @@
-import 'package:chat_gpt/data/repositories/api_error.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -10,9 +9,7 @@ class DataFirebaseProvider {
   //luu du lieu vao firebase
   Future<void> create(
     String title, // Tên tài liệu
-    // String listChatDay,     // Ngày để lưu (có thể là ngày tạo)
     List<Map<String, dynamic>> listMessage,
-    // Danh sách tin nhắn (Map)
   ) async {
     try {
       // Thực hiện lưu dữ liệu vào Firestore
@@ -117,7 +114,7 @@ class DataFirebaseProvider {
           .get();
       return doc.exists;
     } catch (e) {
-      print('Error checking title: $e');
+      // print('Error checking title: $e');
       rethrow;
     }
   }

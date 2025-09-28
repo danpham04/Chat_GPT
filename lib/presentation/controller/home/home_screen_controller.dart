@@ -134,16 +134,13 @@ class HomeScreenController extends GetxController {
           dataChatApp.insert(0, botResponse);
 
           listMessage.insert(0, {
-            "user": userMessage.toJson(),
-            "chatBot": botResponse.toJson()
+            "chatBot": botResponse.toJson(),
+            "user": userMessage.toJson()
+            
           }); // Thêm vào danh sách
         }
-
         await firebaseProvider.create(currentTitle.value, listMessage);
-        // Cập nhật lại danh sách titles sau khi lưu
-        // await fetchTitles(); //TODO: xử lý titile
       } catch (e) {
-        print(e);
         if (e.toString() == 'Exception: no_title' && currentTitle.value == '') {
           snackbarTitle.value = 'Thông báo';
           snackbarMessage.value =
@@ -179,7 +176,8 @@ class HomeScreenController extends GetxController {
       List<Map<String, dynamic>> messages =
           await firebaseProvider.readMessages(title);
       for (var msg in messages) {
-        dataChatApp.add(ChatMessageResponse.fromJson(msg));
+        dataChatApp.add(ChatMessageResponse.fromJson(msg['chatBot']));
+        dataChatApp.add(ChatMessageResponse.fromJson(msg['user']));
         listMessage.add(msg);
       }
     } catch (e) {
@@ -195,7 +193,7 @@ class HomeScreenController extends GetxController {
   // Hàm để xóa một chat
   Future<void> deleteChat(String title) async {
     try {
-      await firebaseProvider.deleteChat(title); //TODO:
+      await firebaseProvider.deleteChat(title);
       dataChatApp.clear();
       currentTitle.value = '';
       // Cập nhật lại danh sách titles sau khi xóa
