@@ -1,3 +1,3 @@
 // ignore: constant_identifier_names
 const KEY_CHAT =
-    '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';
+    'sk-VlQdSamHGafGM6EVTYNF1tGlcZhuwMTlCteM7oGBObT3BlbkFJsp1-lZ8VQKPrhIn8hBjILkj2wHl4IWLZU0EFCxcEMA';
