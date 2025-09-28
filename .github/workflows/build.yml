@@ -5,17 +5,32 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
   sonarqube:
     name: SonarQube
-    runs-on: windows-latest
+    runs-on: ubuntu-latest   # nên dùng Ubuntu thay vì Windows
+
     steps:
+      # Checkout code
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      # The analysis requires to retrieve dependencies and build successfully
+          fetch-depth: 0
+
+      # Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'   # bạn chỉnh theo version đang dùng
+          channel: 'stable'
+
+      # Build Flutter project
       - name: Build
-        run: flutter pub get && flutter build apk --debug
+        run: |
+          flutter pub get
+          flutter build apk --debug
+
+      # SonarQube Scan
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
